@@ -1,23 +1,38 @@
 package main
 
 import (
-//	"fmt"
-  "log"
+	"flag"
+	"log"
 	"net/http"
-//  "strconv"
+	"os"
 )
 
-
-//curl -i -X POST https://localhost:4000/snippet/create
-func main() {
-  mux := http.NewServeMux()
-  mux.HandleFunc("/", home )//criar rota
-  mux.HandleFunc("/snippet", showSnippet)//criar rota
-  mux.HandleFunc("/snippet/create", createSnippet)//criar rota
-  
-  log.Println("Inicializando servidor na porta: 4000")
-  err := http.ListenAndServe(":4000", mux)
-  log.Fatal(err)
+type application struct{
+  errorLog *log.Logger
+  infoLog *log.Logger
 }
 
-//3 pilares 1-router(acessas paginas)2-handler (para onde vai a chamada) 3-servidor(recebe URL)
+//curl -i -X GET http://localhost:4000/snippet/create
+func main() {
+	// nome da flag, valor padra e descrição
+	addr := flag.String("addr", ":4000", "Porta da Rede")
+	flag.Parse()
+
+	infoLog := log.New(os.Stdout, "INFO:\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERRO:\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+  app := &application{
+    errorLog: errorLog,
+    infoLog: infoLog,
+  }
+  
+  srv := &http.Server{
+    Addr: *addr, 
+    ErrorLog: errorLog,
+    Handler: app.routes(),
+  }
+	
+	infoLog.Printf("Inicializando o servidor na porta %s\n", *addr)
+	err := srv.ListenAndServe()
+	errorLog.Fatal(err)
+}
