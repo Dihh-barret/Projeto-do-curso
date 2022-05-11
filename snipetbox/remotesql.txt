@@ -1,0 +1,8 @@
+Username: Dh0wiGZIRp
+Database name: Dh0wiGZIRp
+Password: MaD1I5ymhb
+Server: remotemysql.com
+Port: 3306
+
+
+Dh0wiGZIRp:MaD1I5ymhb@tcp(remotemysql.com)/Dh0wiGZIRp?parseTime=true
