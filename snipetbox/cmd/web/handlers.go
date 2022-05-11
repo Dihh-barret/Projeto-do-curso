@@ -23,12 +23,12 @@ func (app *application) home(rw http.ResponseWriter, r *http.Request) {
 	}
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.serverError(rw, err)
+	  app.serverError(rw,err)
 		return
 	}
 	err = ts.Execute(rw, nil)
 	if err != nil {
-		app.serverError(rw, err)
+		app.serverError(rw,err)
 		return
 	}
 }
@@ -37,28 +37,36 @@ func (app *application) home(rw http.ResponseWriter, r *http.Request) {
 func (app *application) showSnippet(rw http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		app.notFound(rw)
+			app.notFound(rw)
 		return
 	}
-	fmt.Fprintf(rw, "Exibir o Snippet de ID: %d", id)
+	s, err:= app.snippets.Get(id)
+  if err == models.ErrNoRecord{
+    app.notFound(rw)
+    return
+  }else if err!=nil{
+    app.serverError(rw,err)
+    return
+  }
 }
+fmt.Fprintf(rw, "%v",s)
 
 func (app *application) createSnippet(rw http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		rw.Header().Set("Allow", "POST")
-		app.clientError(rw, http.StatusMethodNotAllowed)
+	app.clientError(rw, http.StatusMethodNotAllowed)
 		return
 	}
 
-	title := "Aula de hoje"
-	content := "Tentando lidar com o banco de dados"
-	expire := "7"
+  title := "aula de hoje"
+  content := "Tentnado lidar com banco de dados"
+  expire := "7"
 
-	id, err := app.snippets.Insert(title, content, expire)
-	if err != nil {
-		app.serverError(rw, err)
-		return
-	}
+  id, err := app.snippets.Insert(title,content,expire)
+  if err != nil{
+    app.serverError(rw,err)
+    return
+  }
 
-	http.Redirect(rw, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
+  http.Redirect(rw, r,fmt.Sprintf("/snippet?id=%d",id),http.StatusSeeOther)
 }
